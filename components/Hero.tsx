@@ -1,10 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { Phone, Star } from "lucide-react";
 import { site } from "@/lib/site";
+import { asset } from "@/lib/basePath";
 import Aurora from "@/components/ui/Aurora";
 import ScrambleText from "@/components/ui/ScrambleText";
 import ShimmerButton from "@/components/ui/ShimmerButton";
@@ -47,16 +47,15 @@ export default function Hero() {
       id="top"
       className="relative min-h-dvh w-full overflow-hidden bg-ink"
     >
-      {/* ---- Background: looping video (desktop) / poster (mobile) — z-0 ---- */}
+      {/* ---- Background: looping video / poster (reduced motion) — z-0.
+           Paths go through asset() so they pick up the GitHub Pages basePath. ---- */}
       <div className="absolute inset-0 z-0">
         {usePoster ? (
-          <Image
-            src="/video/hero-poster.jpg"
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={asset("/video/hero-poster.jpg")}
             alt="Мусоровоз СПЕКТР за работой"
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover object-center"
+            className="h-full w-full object-cover object-center"
           />
         ) : (
           <video
@@ -65,11 +64,11 @@ export default function Hero() {
             loop
             playsInline
             preload="metadata"
-            poster="/video/hero-poster.jpg"
+            poster={asset("/video/hero-poster.jpg")}
             className="h-full w-full object-cover object-center"
           >
-            <source src="/video/hero.webm" type="video/webm" />
-            <source src="/video/hero.mp4" type="video/mp4" />
+            <source src={asset("/video/hero.webm")} type="video/webm" />
+            <source src={asset("/video/hero.mp4")} type="video/mp4" />
           </video>
         )}
       </div>
