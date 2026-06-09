@@ -1,10 +1,10 @@
 "use client";
 
 import Image from "next/image";
+import { useEffect, useState } from "react";
 import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { Phone, Star } from "lucide-react";
 import { site } from "@/lib/site";
-import { images } from "@/lib/images";
 import Aurora from "@/components/ui/Aurora";
 import ScrambleText from "@/components/ui/ScrambleText";
 import ShimmerButton from "@/components/ui/ShimmerButton";
@@ -18,6 +18,19 @@ const bottomStats = [
 
 export default function Hero() {
   const reduce = useReducedMotion();
+
+  // The looping video plays on every device. Only users who ask for reduced
+  // motion get the static poster instead. Default false so SSR + first client
+  // render both produce the <video> (no hydration flash); if autoplay is
+  // blocked (e.g. iOS Low Power Mode) the video's poster attribute shows.
+  const [usePoster, setUsePoster] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setUsePoster(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   // Floating cards fade + gentle rise, after the headline
   const card: Variants = {
@@ -34,41 +47,53 @@ export default function Hero() {
       id="top"
       className="relative min-h-dvh w-full overflow-hidden bg-ink"
     >
-      {/* Background photo */}
-      <Image
-        src={images.hero}
-        alt="Контейнеры для вывоза мусора — СПЕКТР, Сочи"
-        fill
-        priority
-        sizes="100vw"
-        className="object-cover object-center"
-      />
+      {/* ---- Background: looping video (desktop) / poster (mobile) — z-0 ---- */}
+      <div className="absolute inset-0 z-0">
+        {usePoster ? (
+          <Image
+            src="/video/hero-poster.jpg"
+            alt="Мусоровоз СПЕКТР за работой"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-center"
+          />
+        ) : (
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            poster="/video/hero-poster.jpg"
+            className="h-full w-full object-cover object-center"
+          >
+            <source src="/video/hero.webm" type="video/webm" />
+            <source src="/video/hero.mp4" type="video/mp4" />
+          </video>
+        )}
+      </div>
 
-      {/* Subtle aurora over the photo (under the dark wash) */}
-      <Aurora />
+      {/* ---- Dark cinematic overlays — z-1 ---- */}
+      <div className="pointer-events-none absolute inset-0 z-[1]">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage:
+              "linear-gradient(90deg, rgba(10,26,15,0.88) 0%, rgba(10,26,15,0.6) 45%, rgba(10,26,15,0.42) 100%)",
+          }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage:
+              "linear-gradient(180deg, rgba(10,26,15,0.6) 0%, rgba(10,26,15,0.1) 30%, rgba(10,26,15,0.85) 88%, rgba(10,26,15,1) 100%)",
+          }}
+        />
+      </div>
 
-      {/* Cinematic overlays: horizontal dark-green wash + bottom fade + green glow */}
-      <div
-        className="absolute inset-0"
-        style={{
-          backgroundImage:
-            "linear-gradient(90deg, rgba(10,26,15,0.88) 0%, rgba(10,26,15,0.6) 45%, rgba(10,26,15,0.4) 100%)",
-        }}
-      />
-      <div
-        className="absolute inset-0"
-        style={{
-          backgroundImage:
-            "linear-gradient(180deg, rgba(10,26,15,0.55) 0%, rgba(10,26,15,0) 28%, rgba(10,26,15,0.85) 88%, rgba(10,26,15,1) 100%)",
-        }}
-      />
-      <div
-        className="pointer-events-none absolute inset-0 mix-blend-screen"
-        style={{
-          backgroundImage:
-            "radial-gradient(60% 50% at 72% 42%, rgba(74,222,128,0.28) 0%, rgba(74,222,128,0) 70%)",
-        }}
-      />
+      {/* ---- Aurora over the darkened video — z-2 ---- */}
+      <Aurora className="z-[2]" />
 
       {/* ---- Floating glass stat cards ---- */}
       <motion.div
