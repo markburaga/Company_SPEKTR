@@ -165,8 +165,12 @@ function CardContent({ c }: { c: Container }) {
   );
 }
 
-/** Pointer/touch spotlight handlers — write position + visibility as CSS vars. */
+/** Pointer spotlight handlers — write position + visibility as CSS vars.
+ *  Touch pointers are ignored: on a phone the "pointer" is the scroll finger,
+ *  so reacting to it caused repaints during scroll and left the highlight stuck
+ *  (pointerleave is unreliable on touch). Mouse/pen only. */
 function onSpotMove(e: React.PointerEvent<HTMLElement>) {
+  if (e.pointerType === "touch") return;
   const r = e.currentTarget.getBoundingClientRect();
   e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
   e.currentTarget.style.setProperty("--my", `${e.clientY - r.top}px`);
@@ -187,7 +191,12 @@ function CardLayer({
   i: number;
   progress: MotionValue<number>;
 }) {
-  const band = 0.18;
+  // Width of the cross-fade between two cards, as a fraction of scroll progress.
+  // Each card owns a 0.25 step; a wide band left two cards overlapping for most
+  // of it, so on touch (no snap) you almost always rested mid-transition — the
+  // "two cards visible" bug. A narrow band gives each card a long solo dwell
+  // (~0.17) and a quick handoff (~0.08).
+  const band = 0.08;
   const isFirst = i === 0;
   const isLast = i === 3;
 
@@ -225,7 +234,7 @@ function CardLayer({
       onPointerMove={onSpotMove}
       onPointerLeave={onSpotLeave}
       style={{ y, scale, opacity, zIndex: i + 1 }}
-      className="absolute inset-0 flex h-full w-full flex-col overflow-hidden rounded-t-[28px] shadow-[0_-20px_60px_-15px_rgba(0,0,0,0.6)]"
+      className="absolute inset-0 flex h-full w-full touch-pan-y flex-col overflow-hidden rounded-t-[28px] shadow-[0_-20px_60px_-15px_rgba(0,0,0,0.6)]"
     >
       <CardContent c={c} />
     </motion.article>
@@ -339,9 +348,12 @@ export default function ContainersStack() {
     <section id="containers" aria-label="Контейнеры и цены">
       {intro}
 
-      {/* Sticky card stack — 500vh tall, one card revealed per quarter of scroll. */}
-      <div ref={ref} className="relative h-[500vh]">
-        <div className="sticky top-0 h-dvh w-full overflow-hidden bg-ink">
+      {/* Sticky card stack — one card revealed per quarter of scroll.
+          Track height uses dvh (not vh) to match the dvh sticky child: on mobile
+          the URL bar resize then scales both together, so scroll progress stays
+          consistent instead of resting mid-transition (the "two cards" bug). */}
+      <div ref={ref} className="relative h-[500dvh]">
+        <div className="sticky top-0 h-dvh w-full touch-pan-y overflow-hidden bg-ink">
           {containers.map((c, i) => (
             <CardLayer key={i} c={c} i={i} progress={scrollYProgress} />
           ))}

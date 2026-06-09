@@ -13,13 +13,11 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "images.unsplash.com",
-        pathname: "/**",
-      },
-    ],
+    // Все фото теперь локальные (public/images/). unoptimized обязателен для
+    // статического экспорта (output: export) на GitHub Pages — иначе next/image
+    // требует сервер оптимизации. Это же значение проставляет и configure-pages
+    // в CI; задаём явно, чтобы поведение совпадало локально.
+    unoptimized: true,
   },
   async headers() {
     return [

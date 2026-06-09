@@ -52,8 +52,11 @@ components/
   ui/  Aurora, ScrambleText, ShimmerButton, ScrollIndicator
 lib/
   site.ts              # phone, address, channels — single source of truth
-  images.ts            # Unsplash photo ids
-next.config.ts         # remotePatterns (Unsplash), security headers
+  images.ts            # local /images paths (basePath-aware via asset())
+  basePath.ts          # asset() — prefixes GitHub Pages basePath onto public/ paths
+scripts/
+  download-images.mjs  # refetches container photos into public/images/
+next.config.ts         # images.unoptimized (static export), security headers
 ```
 
 ## Security headers (applied in `next.config.ts`)
