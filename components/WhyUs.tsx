@@ -2,11 +2,11 @@
 
 import { useEffect, useRef } from "react";
 import {
+  animate,
   motion,
   useInView,
   useMotionValue,
   useReducedMotion,
-  useSpring,
   useTransform,
 } from "framer-motion";
 
@@ -56,16 +56,17 @@ function Counter({
 }) {
   const reduce = useReducedMotion();
   const count = useMotionValue(reduce ? to : 0);
-  // Spring gives an organic ease-out deceleration (Number Ticker style).
-  const spring = useSpring(count, { damping: 40, stiffness: 90, mass: 1 });
-  const value = reduce ? count : spring;
-  const text = useTransform(value, (v) =>
+  const text = useTransform(count, (v) =>
     Math.round(v).toLocaleString("ru-RU"),
   );
 
   useEffect(() => {
-    if (reduce) return;
-    if (active) count.set(to);
+    if (reduce || !active) return;
+    // Fast count-up: easeOut races the number ahead, then eases to a stop
+    // within 1.2s — the old spring crawled for 3-4s and showed wrong figures
+    // while the user was still scrolling.
+    const controls = animate(count, to, { duration: 1.2, ease: "easeOut" });
+    return () => controls.stop();
   }, [active, to, reduce, count]);
 
   return (

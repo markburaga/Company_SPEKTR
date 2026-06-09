@@ -11,8 +11,8 @@ export const images = {
   hero: unsplash("1532996122724-e3c354a0b15b", 1600, 72),
 
   // Container showcase cards (section 2), small → large
-  containerSmall: unsplash("1770390706248-5669d9c242d4", 1000), // construction skip bin
+  containerSmall: unsplash("1711618732376-416cf6af54f6", 1000), // construction debris + roll-off skip
   containerMedium: unsplash("1697993131332-dea7c4771d4a", 1000), // roll-off w/ debris
   containerLarge: unsplash("1717667745830-de42bb75a4fa", 1000), // industrial loader
-  containerMax: unsplash("1648848568410-829a327c7b1e", 1000), // clean fleet truck
+  containerMax: unsplash("1635691315495-ff39debe5764", 1000), // rear-loading garbage truck (no foreign text)
 } as const;
